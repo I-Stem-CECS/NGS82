@@ -1,0 +1,15 @@
+*.xlsx*
+*.Rproj
+*.Rhistory
+.Rproj.user/
+data/
+results/
+*.html
+*.png
+*.RData
+NGS82*
+*_cache/
+COUNTSTAR/
+QC/
+intranet/
+coldata.csv
