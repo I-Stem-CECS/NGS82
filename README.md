@@ -36,7 +36,7 @@
 
 - Size : 76 bp  
 - Encoding : Sanger / Illumina 1.9 
-- Date : 06/07/2022 
+- Date : 01/03/2022 
 
 | Names | #Reads  | #Reads post-filters | STAR : % mapped reads  | # mapped reads | # Filtered mapped reads | STAR : % Filtered mapped reads |
 | :----: | :--------:  | :--------: | :----:  | :--------: | :--------: | :----: |

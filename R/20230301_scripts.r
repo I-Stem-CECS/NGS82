@@ -15,7 +15,7 @@ library("cowplot")
 library("reshape2")
 library(viridis)
 
-directory <- "../counts/"
+directory <- "../COUNTSTAR//"
 
 sampleFiles <- grep("*txt",list.files(directory),value=TRUE)
 sampleCondition <- sub("*_htseq_count.txt","",sampleFiles)
@@ -23,24 +23,25 @@ sampleTable <- data.frame(sampleName = sampleCondition,
                           fileName = sampleFiles,
                           condition = sampleCondition)
 
-write.csv2(sampleTable, "./results/sampleTable.csv")
+write.csv2(sampleTable, "../results/sampleTable.csv")
 
-names_genes <- read.csv2("../../genomes/idGene2Symbole_GRCh37.87_ISTEM_WITHOUT_uncharacterised.txt", sep=",", header=F , stringsAsFactors=F)
+names_genes <- read.csv2("../../genomes/GRCh37.87/idGene2Symbole_GRCh37.87_ISTEM_WITHOUT_uncharacterised.txt", sep=",", header=F , stringsAsFactors=F)
 colnames(names_genes) <- c("id_ensembl","name_gene")
 
-coldata <- read.csv2("./coldata.csv", sep=",", header=T)
+coldata <- read.csv2("./coldata.csv", sep="\t", header=T)
 rownames(coldata) <- coldata$sampleName
 
-coldata$state <- as.factor(coldata$state)
+coldata$condition <- as.factor(coldata$condition)
 coldata$cell_line <- as.factor(coldata$cell_line)
 
-sampleTable2 <- merge(sampleTable[,1:2], coldata, by="sampleName")
+sampleTable2 <- merge(sampleTable[,1:2], coldata, by.x="sampleName", by.y="LibQ")
+colnames(sampleTable2)[3] <- "Name"
 rownames(sampleTable2) <- sampleTable2$sampleName
 
 
 ddsHTSeq <- DESeqDataSetFromHTSeqCount(sampleTable = sampleTable2,
                                        directory = directory,
-				       design = ~ state + cell_line)
+				       design = ~ condition)
 
 dds <- DESeq(ddsHTSeq)
 
@@ -51,7 +52,7 @@ counts_raw <- data.frame(symbol=NA, cts.0)
 for (i in 1:nrow(counts_raw) ){
   counts_raw[i,1] <- names_genes[which(names_genes$id_ensembl %in% rownames(counts_raw)[i]),2]
 }
-write.table(counts_raw,file="./results/NGS78_readscounts_raw_19311genes.csv", sep=";")
+write.table(counts_raw,file="../results/NGS82_readscounts_raw_19311genes.csv", sep=";")
 
 cts.0.norm <- counts(dds, norm=T)
 cts.0.norm <- cts.0.norm[which(rownames(cts) %in% names_genes$id_ensembl),]
@@ -60,7 +61,7 @@ counts_normalise_HP <- data.frame(symbol=NA, cts.0.norm)
 for (i in 1:nrow(counts_normalise_HP) ){
   counts_normalise_HP[i,1] <- names_genes[which(names_genes$id_ensembl %in% rownames(counts_normalise_HP)[i]),2]
 }
-write.table(counts_normalise_HP,file="./results/NGS78_readscounts_norm_19311genes.csv", sep=";")
+write.table(counts_normalise_HP,file="../results/NGS82_readscounts_norm_19311genes.csv", sep=";")
 
 cts.1 <- data.frame(cts.0, moy=NA)
 for (i in 1:nrow(cts.1)){
