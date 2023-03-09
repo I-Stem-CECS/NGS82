@@ -25,11 +25,9 @@
 
 ## DEG results 
 
-### All tissus
 
 |  | Down  | Up | Total |
 | :------------------------- | :----:  | :----: | :----: |
-| xxx | xx | xx | xx |
 | GSDIII vs WT | 3 | 6 | 9 |
 | 0576c12 vs WT | 101 | 70 | 171 |
 | 3390c15 vs WT | 155 | 132 | 287 |
