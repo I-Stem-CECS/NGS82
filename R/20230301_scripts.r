@@ -937,3 +937,381 @@ write.csv2(finalDE, paste0("../results/NGS82_", cdition1, "-vs-", cdition2Ctrl,"
 finalDE_padj05 <- finalDE[which(finalDE$padj < 0.05 ),]
 finalDE_padj05_BM20 <- finalDE_padj05[which(finalDE_padj05$baseMean >= 20 ),]
 write.csv2(finalDE_padj05_BM20, paste0("../results/NGS82_", cdition1, "-vs-", cdition2Ctrl,"_log2FC0-4_padj0-5_BM20.csv"))
+
+
+
+##########################
+### GSDIII-0303c3 vs WT  ###
+##########################
+
+cdition1 <- "0303c3"
+cdition2Ctrl <- "WT"
+contrastO <- "cell_line"
+
+message(cdition1)
+message(cdition2Ctrl)
+message(contrastO)
+
+dds <- DESeqDataSetFromMatrix(countData = cts.filtre[ ,
+                                                      which((colnames(cts.filtre) %in% coldata[ which(
+                                                        coldata$cell_line %in% cdition1), "sampleName"]) | 
+                                                          (colnames(cts.filtre) %in% coldata[ which(
+                                                            coldata$cell_line %in% cdition2Ctrl ), "sampleName"])
+                                                      )], 
+                              colData = coldata[which((coldata$cell_line %in% cdition1) | 
+                                                        (coldata$cell_line %in% cdition2Ctrl) ),] , 
+                              design = ~ cell_line)
+
+
+
+dds <- DESeq(dds)
+
+resGA <- results(dds, contrast=c(contrastO,cdition1,cdition2Ctrl), lfcThreshold=0.4, altHypothesis="greaterAbs")
+
+message(nrow(resGA[which((resGA$padj < 0.05) & resGA$baseMean > 20 ),]))
+# 163
+message(nrow(resGA[which((resGA$padj < 0.05) & resGA$baseMean > 20 & resGA$log2FoldChange < 0 ),])) # Down
+# 90
+message(nrow(resGA[which((resGA$padj < 0.05) & resGA$baseMean > 20 & resGA$log2FoldChange > 0 ),])) # Up
+# 73
+
+rld <- rlogTransformation(dds, blind=TRUE)
+vsd <- varianceStabilizingTransformation(dds, blind=TRUE)
+vstMat = assay(vsd)
+
+
+pdf(paste0("../results/plots_",cdition1,"-vs-",cdition2Ctrl,"_NGS82.pdf"))
+
+hmcol = colorRampPalette(brewer.pal(9, 'GnBu'))(100)
+condcols=brewer.pal(n = length(unique(coldata$cell_line)), name = 'Paired')
+#condcols <- condcols[1:length(unique(coldata$cell_line))]
+names(condcols)=unique(coldata$cell_line)
+
+barplot(colSums(counts(dds, normalized=F)), col=condcols[c(cdition1, cdition2Ctrl)], 
+        las=2,cex.names=0.4,
+        main='Pre Normalised Counts')
+
+barplot(colSums(counts(dds, normalized=T)), col=condcols[c(cdition1, cdition2Ctrl)], 
+        las=2,cex.names=0.4,
+        main='Post Normalised Counts')
+
+
+
+ylim <- c(-10,10)
+drawLines <- function() abline(h=c(-0.4,0.4),col="dodgerblue",lwd=2)
+plotMA(resGA, ylim=ylim); drawLines()
+
+
+pcaData <- plotPCA(rld, intgroup=c("cell_line"), returnData=TRUE)
+percentVar <- round(100 * attr(pcaData, "percentVar"))
+
+ggplot(pcaData, aes(PC1, PC2, color=cell_line)) +
+  geom_point(size=3) +
+  xlab(paste0("PC1: ",percentVar[1],"% variance")) +
+  ylab(paste0("PC2: ",percentVar[2],"% variance")) + 
+  coord_fixed()
+
+
+sampleDists <- dist( t( assay(rld) ) )
+sampleDistMatrix <- as.matrix( sampleDists )
+colours = colorRampPalette( rev(brewer.pal(9, "Blues")) )(255)
+heatmap.2( sampleDistMatrix, trace="none", col=colours, margins=c(15,15))
+
+
+plotDispEsts(dds)
+
+hits=rownames(resGA[which((resGA$padj < 0.05) & resGA$baseMean > 20 ),])
+
+plot(resGA$log2FoldChange,-log(resGA$padj,10),
+     ylab='-log10(Adjusted P)',
+     xlab="Log2 FoldChange",
+     pch=19,cex=0.5, col = "dimgray"
+)      
+
+points(resGA[hits,'log2FoldChange'],
+       -log(resGA[hits,'padj'],10),
+       pch=19,
+       cex=0.5,
+       col="firebrick"
+)
+abline(h=-log10(0.05),lty=3)
+abline(v=-0.4,lty=3)
+abline(v=0.4,lty=3)
+
+
+#plot the -log10(p-val) from all genes over the normalized mean counts 
+plot(resGA$baseMean+1, -log10(resGA$pvalue),
+     log="x", xlab="mean of normalized counts",
+     ylab=expression(-log[10](pvalue)),
+     ylim=c(0,30),
+     cex=.4, col=rgb(0,0,0,.3))
+
+use <- resGA$baseMean > 10
+table(use)
+h1 <- hist(resGA$pvalue[!use], breaks=0:50/50, plot=FALSE)
+h2 <- hist(resGA$pvalue[use], breaks=0:50/50, plot=FALSE)
+colori <- c(`do not pass`="khaki", `pass`="powderblue")
+barplot(height = rbind(h1$counts, h2$counts), beside = FALSE,
+        col = colori, space = 0, main = "", ylab="frequency")
+text(x = c(0, length(h1$counts)), y = 0, label = paste(c(0,1)),
+     adj = c(0.5,1.7), xpd=NA)
+legend("topright", fill=rev(colori), legend=rev(names(colori)))
+
+
+counts_normalise <- counts(dds, norm=T)
+cts.norm.df <- as.data.frame(counts_normalise)
+
+annotation_col <- data.frame( cell_line = coldata$cell_line )
+rownames(annotation_col) <- rownames(coldata)
+mat_colors <- list(
+  cell_line = brewer.pal(length(unique(coldata$cell_line)), "Dark2"))
+names(mat_colors$cell_line) <- unique(coldata$cell_line)
+
+pheatmap( log10(cts.norm.df + 1), 
+          cluster_rows=TRUE, show_rownames=FALSE, color = viridis(250),
+          cluster_cols=TRUE, annotation_col = annotation_col , #fontsize = 12,
+          annotation_colors = mat_colors , angle_col = "45"
+)
+
+pheatmap( log10(cts.norm.df[hits,] + 1), 
+          cluster_rows=TRUE, show_rownames=FALSE, color = viridis(250),
+          cluster_cols=TRUE, annotation_col = annotation_col , #fontsize = 12,
+          annotation_colors = mat_colors , angle_col = "45"
+)
+
+dev.off()
+
+## 
+
+
+## Formatage gene symbol
+
+res_sig <- as.data.frame(resGA)
+mat_sig <- data.frame(symbol=NA, res_sig)
+for (i in 1:nrow(mat_sig) ){
+  mat_sig[i,1] <- names_genes[which(names_genes$id_ensembl %in% rownames(mat_sig)[i]),2]
+}
+
+write.csv2(mat_sig, paste0("../results/",cdition1,"-vs-", cdition2Ctrl,"_log2FC0-4.csv"))
+
+## Formatage I-Stem
+
+coldt <- coldata[which((coldata$cell_line %in% cdition1) | 
+                         (coldata$cell_line %in% cdition2Ctrl) ),]
+
+counts_norm_HP <- counts(dds, norm=T)
+counts_norm_HP <- counts_norm_HP[,c(order(coldt$cell_line))]
+
+finalDE <- data.frame(mat_sig[,c(1:3, 6,7)], differential_expression=NA)
+
+for (i in 1:nrow(finalDE) ){
+  if (is.na(finalDE[i,"log2FoldChange"])) {
+    finalDE[i, "differential_expression"] <- NA
+  } else if (finalDE[i, "log2FoldChange"] >= 0 ) {
+    finalDE[i, "differential_expression"] <- 2^(finalDE[i, "log2FoldChange"])
+  } else {
+    finalDE[i, "differential_expression"] <- (-1)*(1/(2^(finalDE[i,"log2FoldChange"])))
+  }
+  
+}
+
+finalDE <- merge(finalDE, counts_norm_HP, by = "row.names")
+rownames(finalDE) <- finalDE$Row.names
+finalDE <- finalDE[,c(2:ncol(finalDE))]
+
+write.csv2(finalDE, paste0("../results/NGS82_", cdition1, "-vs-", cdition2Ctrl,"_log2FC0-4.csv"))
+finalDE_padj05 <- finalDE[which(finalDE$padj < 0.05 ),]
+finalDE_padj05_BM20 <- finalDE_padj05[which(finalDE_padj05$baseMean >= 20 ),]
+write.csv2(finalDE_padj05_BM20, paste0("../results/NGS82_", cdition1, "-vs-", cdition2Ctrl,"_log2FC0-4_padj0-5_BM20.csv"))
+
+
+
+######################################
+### GSDIII-AGL_KO vs WT - PCi1426  ###
+######################################
+
+
+coldata$cell_line <- as.character(coldata$cell_line)
+coldata[c(22:24),"cell_line"]  <- c(rep("PCi1426_WT", 3 ))
+coldata$cell_line <- as.factor(coldata$cell_line)
+
+
+cdition1 <- "AGL_KO"
+cdition2Ctrl <- "PCi1426_WT"
+contrastO <- "cell_line"
+
+message(cdition1)
+message(cdition2Ctrl)
+message(contrastO)
+
+dds <- DESeqDataSetFromMatrix(countData = cts.filtre[ ,
+                                                      which((colnames(cts.filtre) %in% coldata[ which(
+                                                        coldata$cell_line %in% cdition1), "sampleName"]) | 
+                                                          (colnames(cts.filtre) %in% coldata[ which(
+                                                            coldata$cell_line %in% cdition2Ctrl ), "sampleName"])
+                                                      )], 
+                              colData = coldata[which((coldata$cell_line %in% cdition1) | 
+                                                        (coldata$cell_line %in% cdition2Ctrl) ),] , 
+                              design = ~ cell_line)
+
+
+
+dds <- DESeq(dds)
+
+resGA <- results(dds, contrast=c(contrastO,cdition1,cdition2Ctrl), lfcThreshold=0.4, altHypothesis="greaterAbs")
+
+message(nrow(resGA[which((resGA$padj < 0.05) & resGA$baseMean > 20 ),]))
+# 4
+message(nrow(resGA[which((resGA$padj < 0.05) & resGA$baseMean > 20 & resGA$log2FoldChange < 0 ),])) # Down
+# 3
+message(nrow(resGA[which((resGA$padj < 0.05) & resGA$baseMean > 20 & resGA$log2FoldChange > 0 ),])) # Up
+# 1
+
+rld <- rlogTransformation(dds, blind=TRUE)
+vsd <- varianceStabilizingTransformation(dds, blind=TRUE)
+vstMat = assay(vsd)
+
+
+pdf(paste0("../results/plots_",cdition1,"-vs-",cdition2Ctrl,"_NGS82.pdf"))
+
+hmcol = colorRampPalette(brewer.pal(9, 'GnBu'))(100)
+condcols=brewer.pal(n = length(unique(coldata$cell_line)), name = 'Paired')
+#condcols <- condcols[1:length(unique(coldata$cell_line))]
+names(condcols)=unique(coldata$cell_line)
+
+barplot(colSums(counts(dds, normalized=F)), col=condcols[c(cdition1, cdition2Ctrl)], 
+        las=2,cex.names=0.4,
+        main='Pre Normalised Counts')
+
+barplot(colSums(counts(dds, normalized=T)), col=condcols[c(cdition1, cdition2Ctrl)], 
+        las=2,cex.names=0.4,
+        main='Post Normalised Counts')
+
+
+
+ylim <- c(-10,10)
+drawLines <- function() abline(h=c(-0.4,0.4),col="dodgerblue",lwd=2)
+plotMA(resGA, ylim=ylim); drawLines()
+
+
+pcaData <- plotPCA(rld, intgroup=c("cell_line"), returnData=TRUE)
+percentVar <- round(100 * attr(pcaData, "percentVar"))
+
+ggplot(pcaData, aes(PC1, PC2, color=cell_line)) +
+  geom_point(size=3) +
+  xlab(paste0("PC1: ",percentVar[1],"% variance")) +
+  ylab(paste0("PC2: ",percentVar[2],"% variance")) + 
+  coord_fixed()
+
+
+sampleDists <- dist( t( assay(rld) ) )
+sampleDistMatrix <- as.matrix( sampleDists )
+colours = colorRampPalette( rev(brewer.pal(9, "Blues")) )(255)
+heatmap.2( sampleDistMatrix, trace="none", col=colours, margins=c(15,15))
+
+
+plotDispEsts(dds)
+
+hits=rownames(resGA[which((resGA$padj < 0.05) & resGA$baseMean > 20 ),])
+
+plot(resGA$log2FoldChange,-log(resGA$padj,10),
+     ylab='-log10(Adjusted P)',
+     xlab="Log2 FoldChange",
+     pch=19,cex=0.5, col = "dimgray"
+)      
+
+points(resGA[hits,'log2FoldChange'],
+       -log(resGA[hits,'padj'],10),
+       pch=19,
+       cex=0.5,
+       col="firebrick"
+)
+abline(h=-log10(0.05),lty=3)
+abline(v=-0.4,lty=3)
+abline(v=0.4,lty=3)
+
+
+#plot the -log10(p-val) from all genes over the normalized mean counts 
+plot(resGA$baseMean+1, -log10(resGA$pvalue),
+     log="x", xlab="mean of normalized counts",
+     ylab=expression(-log[10](pvalue)),
+     ylim=c(0,30),
+     cex=.4, col=rgb(0,0,0,.3))
+
+use <- resGA$baseMean > 10
+table(use)
+h1 <- hist(resGA$pvalue[!use], breaks=0:50/50, plot=FALSE)
+h2 <- hist(resGA$pvalue[use], breaks=0:50/50, plot=FALSE)
+colori <- c(`do not pass`="khaki", `pass`="powderblue")
+barplot(height = rbind(h1$counts, h2$counts), beside = FALSE,
+        col = colori, space = 0, main = "", ylab="frequency")
+text(x = c(0, length(h1$counts)), y = 0, label = paste(c(0,1)),
+     adj = c(0.5,1.7), xpd=NA)
+legend("topright", fill=rev(colori), legend=rev(names(colori)))
+
+
+counts_normalise <- counts(dds, norm=T)
+cts.norm.df <- as.data.frame(counts_normalise)
+
+annotation_col <- data.frame( cell_line = coldata$cell_line )
+rownames(annotation_col) <- rownames(coldata)
+mat_colors <- list(
+  cell_line = brewer.pal(length(unique(coldata$cell_line)), "Dark2"))
+names(mat_colors$cell_line) <- unique(coldata$cell_line)
+
+pheatmap( log10(cts.norm.df + 1), 
+          cluster_rows=TRUE, show_rownames=FALSE, color = viridis(250),
+          cluster_cols=TRUE, annotation_col = annotation_col , #fontsize = 12,
+          annotation_colors = mat_colors , angle_col = "45"
+)
+
+pheatmap( log10(cts.norm.df[hits,] + 1), 
+          cluster_rows=TRUE, show_rownames=FALSE, color = viridis(250),
+          cluster_cols=TRUE, annotation_col = annotation_col , #fontsize = 12,
+          annotation_colors = mat_colors , angle_col = "45"
+)
+
+dev.off()
+
+## 
+
+
+## Formatage gene symbol
+
+res_sig <- as.data.frame(resGA)
+mat_sig <- data.frame(symbol=NA, res_sig)
+for (i in 1:nrow(mat_sig) ){
+  mat_sig[i,1] <- names_genes[which(names_genes$id_ensembl %in% rownames(mat_sig)[i]),2]
+}
+
+write.csv2(mat_sig, paste0("../results/",cdition1,"-vs-", cdition2Ctrl,"_log2FC0-4.csv"))
+
+## Formatage I-Stem
+
+coldt <- coldata[which((coldata$cell_line %in% cdition1) | 
+                         (coldata$cell_line %in% cdition2Ctrl) ),]
+
+counts_norm_HP <- counts(dds, norm=T)
+counts_norm_HP <- counts_norm_HP[,c(order(coldt$cell_line))]
+
+finalDE <- data.frame(mat_sig[,c(1:3, 6,7)], differential_expression=NA)
+
+for (i in 1:nrow(finalDE) ){
+  if (is.na(finalDE[i,"log2FoldChange"])) {
+    finalDE[i, "differential_expression"] <- NA
+  } else if (finalDE[i, "log2FoldChange"] >= 0 ) {
+    finalDE[i, "differential_expression"] <- 2^(finalDE[i, "log2FoldChange"])
+  } else {
+    finalDE[i, "differential_expression"] <- (-1)*(1/(2^(finalDE[i,"log2FoldChange"])))
+  }
+  
+}
+
+finalDE <- merge(finalDE, counts_norm_HP, by = "row.names")
+rownames(finalDE) <- finalDE$Row.names
+finalDE <- finalDE[,c(2:ncol(finalDE))]
+
+write.csv2(finalDE, paste0("../results/NGS82_", cdition1, "-vs-", cdition2Ctrl,"_log2FC0-4.csv"))
+finalDE_padj05 <- finalDE[which(finalDE$padj < 0.05 ),]
+finalDE_padj05_BM20 <- finalDE_padj05[which(finalDE_padj05$baseMean >= 20 ),]
+write.csv2(finalDE_padj05_BM20, paste0("../results/NGS82_", cdition1, "-vs-", cdition2Ctrl,"_log2FC0-4_padj0-5_BM20.csv"))
