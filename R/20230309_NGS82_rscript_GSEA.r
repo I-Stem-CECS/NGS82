@@ -198,4 +198,46 @@ gseCC <- gseafun(genes.sig, output_path = "../results/GSEA/GSDIII-vs-WT/CC/", on
 gseMF <- gseafun(genes.sig, output_path = "../results/GSEA/GSDIII-vs-WT/MF/", ont = "MF")
 
 
+path_file <- "../results/GSDIII-0303c3-vs-WT/NGS82_0303c3-vs-WT_log2FC0-4_padj0-5_BM20.csv"
+
+genes.sig <- formatData(path_file = path_file)
+gseBP <- gseafun(genes.sig, output_path = "../results/GSEA/0303c3-vs-WT/BP/", ont = "BP")
+gseCC <- gseafun(genes.sig, output_path = "../results/GSEA/0303c3-vs-WT/CC/", ont = "CC")
+gseMF <- gseafun(genes.sig, output_path = "../results/GSEA/0303c3-vs-WT/MF/", ont = "MF")
+
+
+path_file <- "../results/GSDIII-0576c12-vs-WT/NGS82_0576c12-vs-WT_log2FC0-4_padj0-5_BM20.csv"
+
+genes.sig <- formatData(path_file = path_file)
+gseBP <- gseafun(genes.sig, output_path = "../results/GSEA/0576c12-vs-WT/BP/", ont = "BP")
+gseCC <- gseafun(genes.sig, output_path = "../results/GSEA/0576c12-vs-WT/CC/", ont = "CC")
+gseMF <- gseafun(genes.sig, output_path = "../results/GSEA/0576c12-vs-WT/MF/", ont = "MF")
+
+path_file <- "../results/GSDIII-2523c3-vs-WT/NGS82_2523c3-vs-WT_log2FC0-4_padj0-5_BM20.csv"
+
+genes.sig <- formatData(path_file = path_file)
+gseBP <- gseafun(genes.sig, output_path = "../results/GSEA/2523c3-vs-WT/BP/", ont = "BP")
+gseCC <- gseafun(genes.sig, output_path = "../results/GSEA/2523c3-vs-WT/CC/", ont = "CC")
+gseMF <- gseafun(genes.sig, output_path = "../results/GSEA/2523c3-vs-WT/MF/", ont = "MF")
+
+
+path_file <- "../results/GSDIII-3390c15-vs-WT/NGS82_3390c15-vs-WT_log2FC0-4_padj0-5_BM20.csv"
+
+genes.sig <- formatData(path_file = path_file)
+gseBP <- gseafun(genes.sig, output_path = "../results/GSEA/3390c15-vs-WT/BP/", ont = "BP")
+gseCC <- gseafun(genes.sig, output_path = "../results/GSEA/3390c15-vs-WT/CC/", ont = "CC")
+gseMF <- gseafun(genes.sig, output_path = "../results/GSEA/3390c15-vs-WT/MF/", ont = "MF")
+
+
+
+
+
+
+
+
+
+
+
+
+
 
