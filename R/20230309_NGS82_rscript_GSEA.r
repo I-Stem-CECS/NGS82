@@ -229,9 +229,21 @@ gseCC <- gseafun(genes.sig, output_path = "../results/GSEA/3390c15-vs-WT/CC/", o
 gseMF <- gseafun(genes.sig, output_path = "../results/GSEA/3390c15-vs-WT/MF/", ont = "MF")
 
 
+path_file <- "../results/GSDIII-AGL_KO-vs-PCi1426_WT/NGS82_AGL_KO-vs-PCi1426_WT_log2FC0-4_padj0-5_BM20.csv"
+
+genes.sig <- formatData(path_file = path_file)
+gseBP <- gseafun(genes.sig, output_path = "../results/GSEA/KO_AGL_vs_WT_PCi1426/BP/", ont = "BP")
+gseCC <- gseafun(genes.sig, output_path = "../results/GSEA/KO_AGL_vs_WT_PCi1426/CC/", ont = "CC")
+gseMF <- gseafun(genes.sig, output_path = "../results/GSEA/KO_AGL_vs_WT_PCi1426/MF/", ont = "MF")
 
 
 
+path_file <- "../results/GSDIII-vs-WT_without_KO/NGS82_GSDIII-vs-WT_log2FC0-4_padj0-5_BM20.csv"
+
+genes.sig <- formatData(path_file = path_file)
+gseBP <- gseafun(genes.sig, output_path = "../results/GSEA/GSDIII-vs-WT_without_KO/BP/", ont = "BP")
+gseCC <- gseafun(genes.sig, output_path = "../results/GSEA/GSDIII-vs-WT_without_KO//CC/", ont = "CC")
+gseMF <- gseafun(genes.sig, output_path = "../results/GSEA/GSDIII-vs-WT_without_KO//MF/", ont = "MF")
 
 
 
