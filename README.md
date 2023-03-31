@@ -36,7 +36,7 @@
 | 2523c3 vs WT | 83 | 27 | 110 |
 | 0303c3 vs WT | 90 | 73 | 163 |
 | AGL_KO vs PCi1426_WT | 3 | 1 | 4 |
-
+| AGL_KO vs PCi1426_WT without B2 | 35 | 4 | 39 |
 
 
 ## Details samples 
