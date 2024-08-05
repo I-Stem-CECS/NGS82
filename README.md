@@ -6,7 +6,7 @@ Lucille Rossiaud, Quentin Miagoux, Manon Benabidès, Océane Reiss, Louisa Jauze
 
 - Team : [Pharmacologie des dystrophies musculaires](https://www.istem.eu/randd/pharmacologie-des-dystrophies-musculaires/) 
 - Sequencing type : Quantseq
-- Samples : 24
+- Samples : 21
 - Organism : Human GRCh37.87
 - GEO omnibus [GSE272786](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?&acc=GSE272786)  
 
