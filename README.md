@@ -1,4 +1,6 @@
-# NGS82
+# Galectin 3: a novel biomarker of glycogen storage disease type III. 
+
+Lucille Rossiaud, Quentin Miagoux, Manon Benabidès, Océane Reiss, Louisa Jauze, Margot Jarrige Hélène Polvèche, Edoardo Malfatti, Pascal Laforêt, Giuseppe Ronzitti, Xavier Nissan, Lucile Hoch. 
 
 ## Description
 
@@ -6,11 +8,7 @@
 - Sequencing type : Quantseq
 - Samples : 24
 - Organism : Human GRCh37.87
-
-## Objectives  
-
-- Raw & normalized counts, 
-- List of filtered DE genes (p-adj < 0.05 & |log2FC| >= 0.4 & BM >= 20). 
+- GEO omnibus [GSE272786](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?&acc=GSE272786)  
 
 ## Tools 
 
@@ -23,21 +21,6 @@
 - R Packages ( 4.1.2 ) 
 ( RColorBrewer, gplots, DESeq2, pheatmap , tidyverse, gridExtra, reshape, ggforce, cowplot, reshape2, viridis)
 ( clusterProfiler, enrichplot, org.Hs.eg.db, ggnewscale, pathview, DOSE, plyr, R.utils)
-
-## DEG results 
-
-
-|  | Down  | Up | Total |
-| :------------------------- | :----:  | :----: | :----: |
-| GSDIII vs WT | 3 | 6 | 9 |
-| GSDIII vs WT wthout KO | 20 | 26 | 46 |
-| 0576c12 vs WT | 101 | 70 | 171 |
-| 3390c15 vs WT | 155 | 132 | 287 |
-| 2523c3 vs WT | 83 | 27 | 110 |
-| 0303c3 vs WT | 90 | 73 | 163 |
-| AGL_KO vs PCi1426_WT | 3 | 1 | 4 |
-| AGL_KO vs PCi1426_WT without B2 | 35 | 4 | 39 |
-
 
 ## Details samples 
 
